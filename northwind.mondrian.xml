@@ -1,0 +1,46 @@
+<Schema name="Northwind">
+  <Cube name="Vendas" visible="true" cache="true" enabled="true">
+    <Table name="fato_pedido" schema="public">
+    </Table>
+    <Dimension type="StandardDimension" visible="true" foreignKey="cliente_id_sk" highCardinality="false" name="Cliente">
+      <Hierarchy visible="true" hasAll="true" allMemberName="Clientes" primaryKey="cliente_id_sk">
+        <Table name="dim_cliente" schema="public">
+        </Table>
+        <Level name="Nome" visible="true" column="cliente_id" nameColumn="nome" ordinalColumn="nome" type="Integer" uniqueMembers="false" levelType="Regular" hideMemberIf="Never">
+        </Level>
+        <Level name="Cidade" visible="true" column="cidade" ordinalColumn="cidade" type="String" uniqueMembers="false" levelType="Regular" hideMemberIf="Never">
+        </Level>
+        <Level name="Pa&#237;s" visible="true" column="pais" ordinalColumn="pais" type="String" internalType="String" uniqueMembers="false" levelType="Regular" hideMemberIf="Never">
+        </Level>
+      </Hierarchy>
+    </Dimension>
+    <Dimension type="StandardDimension" visible="true" foreignKey="produto_id_sk" highCardinality="false" name="Produto">
+      <Hierarchy visible="true" hasAll="true" allMemberName="Produtos" primaryKey="produto_id_sk">
+        <Table name="dim_produto" schema="public">
+        </Table>
+        <Level name="Nome" visible="true" column="produto_id" nameColumn="nome" ordinalColumn="nome" type="Integer" uniqueMembers="false" levelType="Regular" hideMemberIf="Never">
+        </Level>
+      </Hierarchy>
+    </Dimension>
+    <Dimension type="TimeDimension" visible="true" foreignKey="data_pedido_sk" highCardinality="false" name="Data do pedido">
+      <Hierarchy visible="true" hasAll="true" allMemberName="Datas dos pedidos" primaryKey="date_sk">
+        <Table name="dim_data" schema="public">
+        </Table>
+        <Level name="Ano" visible="true" column="year_number" ordinalColumn="year_number" type="Integer" uniqueMembers="false" levelType="TimeYears" hideMemberIf="Never">
+        </Level>
+        <Level name="M&#234;s" visible="true" column="month_number" nameColumn="month_name" ordinalColumn="month_number" type="Integer" uniqueMembers="false" levelType="TimeMonths" hideMemberIf="Never">
+        </Level>
+        <Level name="Dia" visible="true" column="day_of_month_number" ordinalColumn="day_of_month_number" type="Integer" uniqueMembers="false" levelType="TimeDays" hideMemberIf="Never">
+        </Level>
+      </Hierarchy>
+    </Dimension>
+    <Measure name="Pre&#231;o" column="preco_unitario" datatype="Numeric" formatString="#,##0.00" aggregator="sum" description="Pre&#231;o por unidade" visible="true">
+    </Measure>
+    <Measure name="Desconto" column="desconto" datatype="Numeric" formatString="#,##0.00" aggregator="sum" description="Desconto aplicado" visible="true">
+    </Measure>
+    <Measure name="Quantidade" column="quantidade" datatype="Integer" aggregator="sum" description="Quantidade vendida" visible="true">
+    </Measure>
+    <Measure name="Total" column="produto_id_sk" datatype="Integer" aggregator="count" description="Total vendido" visible="true">
+    </Measure>
+  </Cube>
+</Schema>

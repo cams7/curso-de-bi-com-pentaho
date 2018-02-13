@@ -1,0 +1,31 @@
+with member [Measures].[YTD Sales] as 'SUM(YTD([Time].CurrentMember), [Measures].[Sales])'
+select NON EMPTY {[Measures].[Sales]} ON COLUMNS,
+  NON EMPTY Hierarchize(Union(Union({[Time].[All Years]}, [Time].[All Years].Children), [Time].[2003].Children)) ON ROWS
+from [SteelWheelsSales]
+
+
+with member [Measures].[Quantidade Anual] as 'SUM(YTD([Data do pedido].CurrentMember), [Measures].[Quantidade])'
+select NON EMPTY {[Measures].[Quantidade]} ON COLUMNS,
+  NON EMPTY Hierarchize(Union({[Data do pedido].[Datas dos pedidos]}, [Data do pedido].[Datas dos pedidos].Children)) ON ROWS
+from [Vendas]
+
+with member [Measures].[Quantidade Anual] as 'SUM(YTD([Data do pedido].CurrentMember), [Measures].[Quantidade])'
+select NON EMPTY {[Measures].[Quantidade]} ON COLUMNS,
+  NON EMPTY Hierarchize(Union({[Data do pedido].[Datas dos pedidos]}, [Data do pedido].[Datas dos pedidos].Children)) ON ROWS
+from [Vendas]
+
+with member [Measures].[Venda] as '([Measures].[Preço]-[Measures].[Desconto])*[Measures].[Quantidade]'
+select NON EMPTY {[Measures].[Quantidade]} ON COLUMNS,
+  NON EMPTY Hierarchize(Union({[Data do pedido].[Datas dos pedidos]}, [Data do pedido].[Datas dos pedidos].Children)) ON ROWS
+from [Vendas]
+
+
+with member [Measures].[Venda acumulada no ano] as 'SUM(YTD([Data do pedido].CurrentMember), ([Measures].[Preço]-[Measures].[Desconto])*[Measures].[Quantidade])'
+select NON EMPTY {[Measures].[Quantidade]} ON COLUMNS,
+  NON EMPTY Hierarchize(Union({[Data do pedido].[Datas dos pedidos]}, [Data do pedido].[Datas dos pedidos].Children)) ON ROWS
+from [Vendas]
+
+
+
+
+

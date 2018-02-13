@@ -1,0 +1,186 @@
+#https://www.digitalocean.com/community/tutorials/como-instalar-e-usar-o-docker-no-ubuntu-16-04-pt
+#http://devopslab.com.br/docker-como-criar-uma-imagem-docker-a-partir-de-um-container-utilizando-o-docker-commit/
+#https://blog.jaapjansma.nl/2016/05/11/installing-pentaho-6-1-community-edition-on-ubuntu/
+#https://help.pentaho.com/Documentation/5.2/0F0/0G0/020
+#https://www.digitalocean.com/community/tutorials/como-instalar-e-utilizar-o-postgresql-no-ubuntu-16-04-pt
+#https://github.com/cams7/casa_das_quentinhas/blob/master/readme.md
+
+docker images
+docker ps -a
+docker run -ti --name pentaho ubuntu
+
+apt update
+apt upgrade
+
+apt install openjdk-8-jre openjdk-8-jdk -y
+java -version
+javac -version
+
+CTR-P
+CTR-Q
+
+docker ps
+docker exec -ti pentaho bash
+
+apt install vim -y
+vim /etc/environment
+
+echo 'export PENTAHO_JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64' >> /root/.bashrc
+echo $PENTAHO_JAVA_HOME
+
+CTR-P
+CTR-Q
+
+docker stop pentaho
+
+docker ps -a
+docker start pentaho
+
+docker cp /opt/downloads/pentaho-server-ce-8.0.0.0-28.zip pentaho:/opt/pentaho-server-ce-8.0.0.0-28.zip
+docker exec -ti pentaho bash
+
+mkdir /opt/pentaho
+apt install unzip
+unzip /opt/pentaho-server-ce-8.0.0.0-28.zip -d /opt/pentaho
+rm /opt/pentaho-server-ce-8.0.0.0-28.zip
+
+sh /opt/pentaho/pentaho-server/set-pentaho-env.sh
+sh /opt/pentaho/pentaho-server/start-pentaho.sh
+
+apt install net-tools
+netstat -tupln
+
+apt install less
+less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+
+CTR-P
+CTR-Q
+
+docker diff pentaho
+docker commit pentaho cams7/pentaho:0.1
+docker images
+
+docker rm pentaho
+
+#------------------------------------------------//------------------------------------------------
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name pentaho cams7/pentaho:0.1
+
+sh /opt/pentaho/pentaho-server/set-pentaho-env.sh | sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+netstat -atunp
+
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+#http://localhost:8180/pentaho
+
+apt update
+apt install postgresql postgresql-contrib -y
+
+
+/etc/init.d/postgresql start
+su postgres
+psql postgres
+ALTER USER postgres WITH PASSWORD 'postgres';
+\q
+exit
+
+
+vim /etc/postgresql/9.5/main/postgresql.conf
+vim /etc/postgresql/9.5/main/pg_hba.conf
+
+/etc/init.d/postgresql restart
+
+ifconfig
+psql -U postgres -h <IP da maquina>
+
+exit
+
+docker diff pentaho
+docker commit -m "Foi instalado o banco de dados Postgresql" -a "César A. Magalhães" pentaho cams7/pentaho:0.2
+docker images
+
+docker rm pentaho
+
+#------------------------------------------------//------------------------------------------------
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name pentaho cams7/pentaho:0.2
+
+/etc/init.d/postgresql start
+
+#https://gist.github.com/amolkhanorkar/8706915
+su postgres
+psql 
+UPDATE pg_database SET datistemplate = FALSE WHERE datname = 'template1';
+DROP DATABASE template1;
+CREATE DATABASE template1 WITH TEMPLATE = template0 ENCODING = 'UNICODE';
+UPDATE pg_database SET datistemplate = TRUE WHERE datname = 'template1';
+\c template1
+VACUUM FREEZE;
+\q
+exit
+
+su postgres
+psql -f /opt/pentaho/pentaho-server/data/postgresql/create_repository_postgresql.sql
+psql -f /opt/pentaho/pentaho-server/data/postgresql/create_quartz_postgresql.sql
+psql -f /opt/pentaho/pentaho-server/data/postgresql/create_jcr_postgresql.sql
+exit
+
+vim /opt/pentaho/pentaho-server/tomcat/webapps/pentaho/META-INF/context.xml
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/hibernate/postgresql.hibernate.cfg.xml
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/hibernate/hibernate-settings.xml
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/applicationContext-spring-security-hibernate.properties
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/applicationContext-spring-security-jdbc.xml
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/simple-jndi/jdbc.properties
+
+
+vim /opt/pentaho/pentaho-server/data/postgresql/create_sampledata_postgresql.sql
+vim /opt/pentaho/pentaho-server/data/postgresql/create_shark_postgresql.sql
+
+su postgres
+psql -f /opt/pentaho/pentaho-server/data/postgresql/create_sampledata_postgresql.sql
+psql -f /opt/pentaho/pentaho-server/data/postgresql/create_shark_postgresql.sql
+exit
+
+ls /opt/pentaho/pentaho-server/tomcat/lib/
+vim /opt/pentaho/pentaho-server/tomcat/webapps/pentaho/WEB-INF/web.xml
+
+rm -r /root/.pentaho
+rm -r /root/.kettle
+
+sh /opt/pentaho/pentaho-server/set-pentaho-env.sh | sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+exit
+
+docker diff pentaho
+docker commit -m "Foram feitas algumas alteraçoes de acordo com o tutorial 'Installing Pentaho 6.1 Community Edition on Ubuntu'" -a "César A. Magalhães" pentaho cams7/pentaho:0.3
+docker images
+
+docker rm pentaho
+
+#------------------------------------------------//------------------------------------------------
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name pentaho cams7/pentaho:0.3
+
+/etc/init.d/postgresql restart
+sh /opt/pentaho/pentaho-server/set-pentaho-env.sh | sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/quartz/quartz.properties
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/dialects/postgresql/audit_sql.xml
+vim /opt/pentaho/pentaho-server/pentaho-solutions/system/jackrabbit/repository.xml
+
+docker rm pentaho
+
+#------------------------------------------------//------------------------------------------------
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name pentaho cams7/pentaho:0.2.1
+
+sh /opt/pentaho/pentaho-server/set-pentaho-env.sh | sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+
+
+
+
+

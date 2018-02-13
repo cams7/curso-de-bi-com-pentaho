@@ -1,0 +1,256 @@
+#------------------------------------------------(10/02/18)------------------------------------------------
+docker run -ti -p 8180:8080 -p 5532:5432 --name youtube_professormarcebrito cams7/pentaho:0.2.1
+
+/etc/init.d/postgresql start
+
+sh /opt/pentaho/pentaho-server/set-pentaho-env.sh | sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+netstat -tupln
+
+mkdir -p /var/lib/postgresql/databases/youtube_professormarcebrito
+docker cp /home/cams7/Desenv/Youtube/Pentaho/professormarcebrito/northwind.backup youtube_professormarcebrito:/var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup
+docker exec -it youtube_professormarcebrito bash
+chown postgres:postgres /var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup
+
+su postgres
+psql -d template1 -U postgres
+CREATE USER pentaho WITH PASSWORD 'pentaho';
+CREATE DATABASE northwind;
+GRANT ALL PRIVILEGES ON DATABASE northwind to pentaho;
+CREATE DATABASE northwind_dw;
+GRANT ALL PRIVILEGES ON DATABASE northwind_dw to pentaho;
+\q
+
+pg_restore -h localhost -p 5432 -U postgres -d northwind -v "/var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup"
+exit
+
+exit
+
+docker stop youtube_professormarcebrito
+docker diff youtube_professormarcebrito
+docker commit -m "Foram criado os bancos de dados northwind e northwind_dw" -a "César A. Magalhães" youtube_professormarcebrito cams7/youtube_professormarcebrito:0.1
+docker images
+
+docker rm youtube_professormarcebrito
+
+#------------------------------------------------(10/02/18)------------------------------------------------
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name youtube_professormarcebrito cams7/youtube_professormarcebrito:0.1
+
+/etc/init.d/postgresql start
+
+exit
+docker stop youtube_professormarcebrito
+
+#------------------------------------------------(10/02/18)------------------------------------------------
+
+docker start youtube_professormarcebrito
+docker exec -it youtube_professormarcebrito bash
+
+/etc/init.d/postgresql start
+
+sh /opt/pentaho/pentaho-server/set-pentaho-env.sh | sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+exit
+docker stop youtube_professormarcebrito
+
+#------------------------------------------------(11/02/18)------------------------------------------------
+
+docker diff youtube_professormarcebrito
+docker commit -m "Foi populado o banco northwind_dw" -a "César A. Magalhães" youtube_professormarcebrito cams7/youtube_professormarcebrito:0.2
+docker images
+
+#------------------------------------------------(12/02/18)------------------------------------------------
+
+docker rm youtube_professormarcebrito
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name youtube_professormarcebrito cams7/youtube_professormarcebrito:0.2
+
+rm -r /opt/pentaho/pentaho-server
+CTR-P
+CTR-Q
+
+docker cp /opt/downloads/pentaho/biserver-ce-4.8.0-stable.zip youtube_professormarcebrito:/opt/pentaho/biserver-ce-4.8.0-stable.zip
+docker exec -it youtube_professormarcebrito bash
+
+unzip /opt/pentaho/biserver-ce-4.8.0-stable.zip -d /opt/pentaho
+rm /opt/pentaho/biserver-ce-4.8.0-stable.zip
+
+find /opt/pentaho/biserver-ce -type f -exec grep -i 'publisher-password' {} \; -print
+vim /opt/pentaho/biserver-ce/pentaho-solutions/system/publisher_config.xml
+
+/etc/init.d/postgresql start
+
+apt install openjdk-7-jre openjdk-7-jdk -y
+update-alternatives --config java
+update-alternatives --config javac
+
+sh /opt/pentaho/administration-console/set-pentaho-env.sh | sh /opt/pentaho/administration-console/start-pac.sh
+sh /opt/pentaho/administration-console/stop-pac.sh
+sh /opt/pentaho/biserver-ce/set-pentaho-env.sh | sh /opt/pentaho/biserver-ce/start-pentaho.sh | less +F /opt/pentaho/biserver-ce/tomcat/logs/catalina.out
+sh /opt/pentaho/biserver-ce/stop-pentaho.sh
+
+#------------------------------------------------(12/02/18)------------------------------------------------
+
+docker pull ubuntu:14.04
+docker run -ti  -p 8099:8099 -p 8180:8080 -p 5532:5432 --name ubuntu ubuntu:14.04
+
+apt-get update
+apt-get upgrade -y
+apt-get install openjdk-7-jdk -y
+
+update-java-alternatives --list
+
+java -version
+javac -version
+
+docker commit -m "Foi instalado o Java 7" -a "César A. Magalhães" ubuntu cams7/java7
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name java7 cams7/java7
+
+mkdir -p /opt/pentaho
+
+docker cp /opt/downloads/pentaho/biserver-ce-4.8.0-stable.zip java7:/opt/pentaho/biserver-ce-4.8.0-stable.zip
+docker exec -it java7 bash
+
+apt-get install unzip
+
+unzip /opt/pentaho/biserver-ce-4.8.0-stable.zip -d /opt/pentaho
+rm /opt/pentaho/biserver-ce-4.8.0-stable.zip
+
+find /opt/pentaho/biserver-ce -type f -exec grep -i 'publisher-password' {} \; -print
+
+apt-get install vim -y
+vim /opt/pentaho/biserver-ce/pentaho-solutions/system/publisher_config.xml
+
+echo 'export PENTAHO_JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64' >> /root/.bashrc
+echo $PENTAHO_JAVA_HOME
+
+chmod +x /opt/pentaho/administration-console/*.sh
+chmod +x /opt/pentaho/biserver-ce/*.sh
+chmod +x /opt/pentaho/biserver-ce/tomcat/bin/*.sh
+
+vim /opt/pentaho/administration-console/start-pac.sh
+#Change line 16 start-pac.sh form CLASSPATH="$DIR_REL:resource/config:" to CLASSPATH="$DIR_REL:$DIR_REL/resource/config"
+
+sh /opt/pentaho/administration-console/start-pac.sh
+sh /opt/pentaho/administration-console/stop-pac.sh
+#http://localhost:8099
+#Username: admin
+#Password: password
+
+sh /opt/pentaho/biserver-ce/start-pentaho.sh | less +F /opt/pentaho/biserver-ce/tomcat/logs/catalina.out
+sh /opt/pentaho/biserver-ce/stop-pentaho.sh
+#http://localhost:8180
+#Username: joe
+#Password: password
+
+apt-get update
+apt-get install postgresql postgresql-contrib -y
+
+/etc/init.d/postgresql start
+su postgres
+psql postgres
+ALTER USER postgres WITH PASSWORD 'postgres';
+\q
+exit
+
+vim /etc/postgresql/9.3/main/postgresql.conf
+vim /etc/postgresql/9.3/main/pg_hba.conf
+
+/etc/init.d/postgresql restart
+
+ifconfig
+psql -U postgres -h <IP da maquina>
+
+mkdir -p /var/lib/postgresql/databases/youtube_professormarcebrito
+docker cp /home/cams7/Desenv/Youtube/Pentaho/professormarcebrito/northwind.backup java7:/var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup
+docker exec -it java7 bash
+chown postgres:postgres /var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup
+
+su postgres
+psql -d template1 -U postgres
+CREATE USER pentaho WITH PASSWORD 'pentaho';
+CREATE DATABASE northwind;
+GRANT ALL PRIVILEGES ON DATABASE northwind to pentaho;
+CREATE DATABASE northwind_dw;
+GRANT ALL PRIVILEGES ON DATABASE northwind_dw to pentaho;
+\q
+
+pg_restore -h localhost -p 5432 -U postgres -d northwind -v "/var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup"
+exit
+
+docker commit -m "Foi realizada a aula 09" -a "César A. Magalhães" java7 cams7/youtube_professormarcebrito:aula09
+
+#------------------------------------------------(12/02/18)------------------------------------------------
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name youtube_professormarcebrito cams7/youtube_professormarcebrito:aula09
+
+/etc/init.d/postgresql start
+
+#------------------------------------------------(13/02/18)------------------------------------------------
+docker run -ti -p 8180:8080 -p 5532:5432 --name youtube_professormarcebrito cams7/pentaho:0.2.1
+
+/etc/init.d/postgresql start
+
+sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+netstat -tupln
+
+mkdir -p /var/lib/postgresql/databases/youtube_professormarcebrito
+
+docker cp /home/cams7/Desenv/Youtube/Pentaho/professormarcebrito/northwind.backup youtube_professormarcebrito:/var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup
+docker exec -it youtube_professormarcebrito bash
+chown postgres:postgres /var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup
+
+su postgres
+psql -d template1 -U postgres
+CREATE USER pentaho WITH PASSWORD 'pentaho';
+CREATE DATABASE northwind;
+GRANT ALL PRIVILEGES ON DATABASE northwind to pentaho;
+CREATE DATABASE northwind_dw;
+GRANT ALL PRIVILEGES ON DATABASE northwind_dw to pentaho;
+\q
+
+pg_restore -h localhost -p 5432 -U postgres -d northwind -v "/var/lib/postgresql/databases/youtube_professormarcebrito/northwind.backup"
+exit
+
+docker commit -m "Foi realizada a aula 12" -a "César A. Magalhães" youtube_professormarcebrito cams7/youtube_professormarcebrito:aula12
+
+
+docker run -ti -p 8180:8080 -p 5532:5432 --name youtube_professormarcebrito cams7/youtube_professormarcebrito:aula12
+
+/etc/init.d/postgresql start
+
+sh /opt/pentaho/pentaho-server/start-pentaho.sh | less +F /opt/pentaho/pentaho-server/tomcat/logs/catalina.out
+sh /opt/pentaho/pentaho-server/stop-pentaho.sh
+
+docker cp /home/cams7/Desenv/Youtube/Pentaho/saiku/license_af098a15ccbd.lic youtube_professormarcebrito:/opt/pentaho/pentaho-server/pentaho-solutions/system/saiku/license.lic
+
+docker commit -m "Foi realizada a aula 14" -a "César A. Magalhães" youtube_professormarcebrito cams7/youtube_professormarcebrito:aula14
+docker stop youtube_professormarcebrito
+docker rm youtube_professormarcebrito
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
